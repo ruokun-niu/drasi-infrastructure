@@ -1,0 +1,14 @@
+[package]
+name = "drasi-infra"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.21"
+opentelemetry = {version = "0.20.0", features = ["rt-tokio"]}
+reqwest = { version = "0.12.4", features = ["json"] }
+serde_json = "1.0.117"
+tracing = "0.1.40"
+tracing-opentelemetry = "0.21.0"
