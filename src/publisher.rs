@@ -27,7 +27,7 @@ impl Publisher {
     }
 
     #[tracing::instrument(skip(self, data), err)]
-    pub async fn http_publish(&self, query_id: &str, data: Value) -> Result<(), Box<dyn Error>> {
+    pub async fn http_publish(&self, query_id: &str, data: Value, trace_header: Option<String>) -> Result<(), Box<dyn Error>> {
         log::info!("Publishing {:#?}", data);
 
         let mut request = self
@@ -41,7 +41,11 @@ impl Publisher {
         let ctx = Span::current().context();
         let span = ctx.span();
         let span_context = span.span_context();
-        request = request.header("traceparent", create_traceparent_header(span_context));
+        let traceparent = match trace_header {
+            Some(header) => header,
+            None => create_traceparent_header(&span_context),
+        };
+        request = request.header("traceparent", traceparent);
         request = request.header("tracestate", span_context.trace_state().header());
 
         let response = request.send().await;
