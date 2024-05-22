@@ -1,3 +1,4 @@
+use reqwest::header;
 use serde_json::Value;
 use std::collections::HashMap;
 use async_trait::async_trait;
@@ -8,10 +9,8 @@ pub struct Headers {
 }
 
 impl Headers {
-    pub fn new() -> Headers {
-        Headers {
-            headers: HashMap::new(),
-        }
+    pub fn new(headers: HashMap<String, String>) -> Self {
+        Headers { headers }
     }
 
     pub fn add_header(&mut self, key: &str, value: &str) {
@@ -27,6 +26,7 @@ pub trait DaprInvoker {
 
 #[async_trait]
 pub trait DaprPublisher {
+    fn new(dapr_host: String, dapr_port: u16, pubsub: String, topic: String) -> Self;
     async fn publish(&self, data: Value, headers: Headers) -> Result<(), Box<dyn std::error::Error>>;
 }
 
@@ -38,8 +38,9 @@ pub struct DaprHttpPublisher{
     topic: String,
 }
 
-impl DaprHttpPublisher {
-    pub fn new(dapr_host: String, dapr_port: u16, pubsub: String, topic: String) -> Self {
+#[async_trait]
+impl DaprPublisher for DaprHttpPublisher {
+    fn new(dapr_host: String, dapr_port: u16, pubsub: String, topic: String) -> Self {
         DaprHttpPublisher {
             client: reqwest::Client::new(),
             dapr_host,
@@ -49,9 +50,6 @@ impl DaprHttpPublisher {
         }
     }
 
-}
-#[async_trait]
-impl DaprPublisher for DaprHttpPublisher {
     async fn publish(&self, data: Value, headers: Headers) -> Result<(), Box<dyn std::error::Error>> {
         let mut request  = self.client
             .post(format!(
