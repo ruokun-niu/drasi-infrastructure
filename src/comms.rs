@@ -27,7 +27,6 @@ pub trait DaprInvoker {
 
 #[async_trait]
 pub trait DaprPublisher {
-    fn new(dapr_host: String, dapr_port: u16, pubsub: String, topic: String) -> Self;
     async fn publish(&self, data: Value, headers: Headers) -> Result<(), Box<dyn std::error::Error>>;
 }
 
@@ -39,9 +38,8 @@ pub struct DaprHttpPublisher{
     topic: String,
 }
 
-#[async_trait]
-impl DaprPublisher for DaprHttpPublisher {
-    fn new(dapr_host: String, dapr_port: u16, pubsub: String, topic: String) -> Self {
+impl DaprHttpPublisher {
+    pub fn new(dapr_host: String, dapr_port: u16, pubsub: String, topic: String) -> Self {
         DaprHttpPublisher {
             client: reqwest::Client::new(),
             dapr_host,
@@ -51,6 +49,9 @@ impl DaprPublisher for DaprHttpPublisher {
         }
     }
 
+}
+#[async_trait]
+impl DaprPublisher for DaprHttpPublisher {
     async fn publish(&self, data: Value, headers: Headers) -> Result<(), Box<dyn std::error::Error>> {
         let mut request  = self.client
             .post(format!(
