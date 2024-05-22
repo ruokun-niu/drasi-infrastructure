@@ -7,6 +7,18 @@ pub struct Headers {
     pub headers: HashMap<String, String>,
 }
 
+impl Headers {
+    pub fn new() -> Headers {
+        Headers {
+            headers: HashMap::new(),
+        }
+    }
+
+    pub fn add_header(&mut self, key: &str, value: &str) {
+        self.headers.insert(key.to_string(), value.to_string());
+    }
+}
+
 #[async_trait]
 pub trait DaprInvoker {
     fn new(dapr_host: String, dapr_port: u16, app_id: String, method: String) -> Self;
